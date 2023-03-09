@@ -1,0 +1,105 @@
+import java.util.Arrays;
+
+class LRUCache {
+    private final int capacity;
+    private final Integer[] keys;
+    private final Integer[] values;
+    private final Long[] lastUsedTime;
+    private int currentSize;
+    
+    /*Initializing data members*/
+    public LRUCache(int capacity) {
+        this.capacity = capacity;
+        keys = new Integer[capacity];
+        values = new Integer[capacity];
+        lastUsedTime = new Long[capacity];
+        currentSize = 0;
+    }
+    
+    /*Get the value if the key exists in the cache, otherwise return -1*/
+    public Integer get(Integer key) {
+        int index = indexOf(key);
+        if (index == -1) {
+            return -1;
+        }
+        lastUsedTime[index] = System.nanoTime();
+        return values[index];
+    }
+    
+    /*Insert the value if the key is not already present. When the cache reaches its capacity, it should invalidate the least recently used item before inserting a new item*/
+    public void put(Integer key, Integer value) {
+        int index = indexOf(key);
+        if (index != -1) {
+            lastUsedTime[index] = System.nanoTime();
+            values[index] = value;
+            return;
+        }
+        if (currentSize < capacity) {
+            index = currentSize++;
+        } else {
+            index = getIndexOfLRU();
+        }
+        keys[index] = key;
+        values[index] = value;
+        lastUsedTime[index] = System.nanoTime();
+    }
+    
+    /*Remove and return the value if the key exists in the cache, otherwise return -1*/
+    public Integer delete(Integer key) {
+        int index = indexOf(key);
+        if (index == -1) {
+            return -1;
+        }
+        Integer deletedValue = values[index];
+        keys[index] = null;
+        values[index] = null;
+        lastUsedTime[index] = null;
+        currentSize--;
+        return deletedValue;
+    }
+    
+    /*Get Index of a key*/
+    private int indexOf(Integer key) {
+        for (int i = 0; i < currentSize; i++) {
+            if (keys[i].equals(key)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /*Get index to get least recently used element index*/
+    private int getIndexOfLRU() {
+        int index = 0;
+        Long minlastUsedTime = lastUsedTime[0];
+        for (int i = 1; i < currentSize; i++) {
+            if (lastUsedTime[i] < minlastUsedTime) {
+                index = i;
+                minlastUsedTime = lastUsedTime[i];
+            }
+        }
+        return index;
+    }
+
+}
+
+class LRUCacheImplementation {
+    public static void main(String[] args){
+            LRUCache cache = new LRUCache(2);
+        
+        	cache.put(1, 1);
+            cache.put(2, 2);
+        
+            System.out.println(cache.get(1));       // returns 1
+            cache.put(3, 3);                        // evicts key 2
+            System.out.println(cache.get(2));       // returns -1 (not found)
+            cache.put(4, 4);                        // evicts key 1
+            System.out.println(cache.get(1));       // returns -1 (not found)
+        
+            System.out.println(cache.get(3));       // returns 3
+            System.out.println(cache.get(4));       // returns 4
+            System.out.println(cache.delete(3));    // returns 3
+            System.out.println(cache.get(3));       // returns -1 (not found)
+        }
+
+}
